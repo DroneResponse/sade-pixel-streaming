@@ -1,15 +1,12 @@
 FROM node:18.17.0 as builder
 
-WORKDIR /SignallingTester
-
-COPY Common/ Common
-COPY SS_Test/ SS_Test
-
+COPY /Common/ /SignallingTester/Common
 WORKDIR /SignallingTester/Common
 
 RUN npm install
 RUN npm run build
 
+COPY /SS_Test/ /SignallingTester/SS_Test
 WORKDIR /SignallingTester/SS_Test
 
 RUN npm install
@@ -19,4 +16,3 @@ RUN npm run build
 USER node
 
 CMD [ "node", "build/index.js" ]
-

@@ -1,13 +1,16 @@
 # Use the current Long Term Support (LTS) version of Node.js
 FROM node:lts
+
+# system things to be cached
+RUN apt-get update
+
 # Copy the signalling server and frontend source code from the build context
 COPY package.json package.json
 COPY /Common /Common
 COPY /Signalling /Signalling
-COPY /SignallingWebServer /SignallingWebServer
 COPY /Frontend /Frontend
-# Install the dependencies for the signalling server and build the frontend
-RUN apt-get update
+COPY /SignallingWebServer /SignallingWebServer
+
 RUN SignallingWebServer/platform_scripts/bash/setup.sh --build
 
 # Expose TCP ports 80 and 443 for player WebSocket connections and web server HTTP(S) access

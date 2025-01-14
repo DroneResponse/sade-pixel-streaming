@@ -1,29 +1,42 @@
----
-version: "3.4"
 services:
-  signalling:
-    build:
-      context: ../
-      dockerfile: ./SignallingWebServer/Dockerfile
-    image: signalling
-    init: true
-    network_mode: "host"
-    healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:80"]
-        interval: 10s
-        timeout: 5s
-        retries: 3
-        start_period: 30s
-        start_interval: 5s # only supported on docker engine 25+
+    signalling:
+        build:
+            context: ../
+            dockerfile: ./SignallingWebServer/Dockerfile
+        image: signalling
+        init: true
+        network_mode: "bridge"
+        ports:
+            # TCP 80 for player WebSocket connections and web server HTTP access
+            - "10080:80"
+            # TCP 443 for player WebSocket connections and web server HTTPS access
+            - "10443:443"
+            # TCP 8888 for streamer WebSocket connections
+            - "18888:8888"
+            # UDP 8888 for streamer WebSocket connections
+            - "18888:8888/udp"
+            # TCP 8889 for connections from the SFU (Selective Forwarding Unit)
+            - "18889:8889"
+            # TCP 19302 for connections to Google's STUN server
+            - "19302:19302"
+            # TCP 3478 for connections from coturn (TURN server)
+            - "13478:3478"
+            # TCP 3479 for connections from coturn (TURN server)
+            - "13479:3479"
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:80"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 30s
+            start_interval: 5s
 
-  tester:
-    build:
-      context: ../
-      dockerfile: ./SS_Test/Dockerfile
-    image: signalling_tester
-    network_mode: "host"
-    depends_on:
-      signalling:
-        condition: service_healthy
-
-
+    tester:
+        build:
+            context: ../
+            dockerfile: ./SS_Test/Dockerfile
+        image: signalling_tester
+        network_mode: "bridge"
+        depends_on:
+            signalling:
+                condition: service_healthy
